@@ -1,7 +1,7 @@
 // Document Ready
 $(document).ready(function() {
 
-  // UI Vars
+  // UI elements
   var $currentDay = $("#currentDay");
   var $timeBlock09 = $("#09");
   var $timeBlock10 = $("#10");
@@ -13,11 +13,8 @@ $(document).ready(function() {
   var $timeBlock04 = $("#16");
   var $timeBlock05 = $("#17");
 
-  // Global Time Variables
-  var now = moment();
-  var currentHour = now.format("HH");
 
-  // Time Block Array
+  // Time block array
   var timeBlocks = [
     $timeBlock09,
     $timeBlock10,
@@ -30,8 +27,19 @@ $(document).ready(function() {
     $timeBlock05
   ];
 
-  // Update Header Date and Time
+
+  // Local storage array
+  var storedEvents = [];
+
+
+  // Global time variables
+  var now = moment();
+  var currentHour = now.format("HH");
+
+
+  // Update date and time
   $currentDay.text(now.format("h:mm a on dddd MMMM Do, YYYY"));
+
 
   // Render past, present, future colors to calendar
   timeBlocks.forEach(function(block, index) {
@@ -51,6 +59,30 @@ $(document).ready(function() {
     } else if (currentId === currentHour) {
       description.addClass("present");
     }
+  });
+
+
+  // Save event
+  $(".saveBtn").on("click", function(event) {
+
+    // Init local vars
+    var targetBlock;
+    var userInput;
+
+    // Capture which time block's button was clicked
+    var target = $(event.target);
+
+    // Capture the parent element if icon was clicked
+    if (target.hasClass("icon")) {
+      targetBlock = target.parent().parent();
+    } 
+    // Capture the parent element if button was clicked
+    else if (target.hasClass("saveBtn")) {
+      targetBlock = target.parent();
+    }
+
+    // Capture user's input
+    userInput = targetBlock.find(".user-input").val();
   });
 
 });
