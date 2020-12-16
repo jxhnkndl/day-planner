@@ -1,7 +1,7 @@
 // Document Ready
 $(document).ready(function() {
 
-  // UI elements
+  // UI elements: IDs assigned based on 24-hour time
   var $currentDay = $("#currentDay");
   var $timeBlock09 = $("#09");
   var $timeBlock10 = $("#10");
@@ -13,8 +13,7 @@ $(document).ready(function() {
   var $timeBlock04 = $("#16");
   var $timeBlock05 = $("#17");
 
-
-  // Time block array
+  // Time block array for looping through all blocks
   var timeBlocks = [
     $timeBlock09,
     $timeBlock10,
@@ -24,121 +23,98 @@ $(document).ready(function() {
     $timeBlock02,
     $timeBlock03,
     $timeBlock04,
-    $timeBlock05
+    $timeBlock05,
   ];
 
-
-  // Local storage array
-  var storedEvents = [];
-
-
-  // Global time variables
+  // Init Moment.js
   var now = moment();
   var currentHour = now.format("HH");
 
+  // Init local storage array
+  var plannerEntries = [];
 
-  // Update date and time
-  $currentDay.text(now.format("h:mm a on dddd MMMM Do, YYYY"));
+  // Run application
+  init();
 
+  // Init application upon launch
+  function init() {
+    $currentDay.text(now.format("h:mm a on dddd MMMM Do, YYYY"));
 
-  // Render past, present, future colors to calendar
-  timeBlocks.forEach(function(block, index) {
-
-    // Capture id attribute from current time block
-    var currentId = block.attr("id");
-    // Query for the editable description field in the current time block
-    var description = block.find(".description");
-
-    // Dynamically set block's background color based on current time
-    if (currentId < currentHour) {
-      description.addClass("past");
-
-    } else if (currentId > currentHour) {
-      description.addClass("future");
-
-    } else if (currentId === currentHour) {
-      description.addClass("present");
-    }
-  });
-
-
-  // Save event
-  $(".saveBtn").on("click", function(event) {
-
-    // Init local vars
-    var targetBlock, userInput, plannerEntry;
-
-    // Capture which time block's button was clicked
-    var target = $(event.target);
-
-    // Access the parent row time block
-    if (target.hasClass("icon")) {
-      targetBlock = target.parent().parent();
-
-    } else if (target.hasClass("saveBtn")) {
-      targetBlock = target.parent();
-    }
-
-    // Capture user's input
-    userInput = targetBlock.find(".user-input").val();
-
-    // Format storage object
-    plannerEntry = {
-      id: targetBlock.attr("id"),
-      description: userInput
-    }
-
-    // Save the event
-    saveEvent(plannerEntry);
-  });
-
-
-  // Save event
-  function saveEvent(plannerEntry) {
-
-    // Check if user has already saved events in the planner
-    if (localStorage.getItem("events") === null) {
-      storedEvents = [];
-    } else {
-      storedEvents = JSON.parse(localStorage.getItem("events"));
-    }
-
-    // Push this event into the saved events array
-    storedEvents.push(plannerEntry);
-
-    // Set local storage
-    localStorage.setItem("events", JSON.stringify(storedEvents));
+    setBlockColor();
+    loadEntries();
   }
 
+  // Loop through time blocks and assign background color based on current time
+  function setBlockColor() {
+    timeBlocks.forEach(function (block, index) {
+      var currentId = block.attr("id");
+      var description = block.find(".description");
 
-  // Load saved events
-  function loadEvents() {
+      if (currentId < currentHour) {
+        description.addClass("past");
+      } else if (currentId > currentHour) {
+        description.addClass("future");
+      } else if (currentId === currentHour) {
+        description.addClass("present");
+      }
+    });
+  }
 
-    // Check if user has already saved events in the planner
-    if (localStorage.getItem("events") === null) {
-      storedEvents = [];
+  // Save entry to local storage
+  function saveEntry(plannerEntry) {
+    if (localStorage.getItem("entries") === null) {
+      plannerEntries = [];
     } else {
-      storedEvents = JSON.parse(localStorage.getItem("events"));
+      plannerEntries = JSON.parse(localStorage.getItem("entries"));
+    }
+
+    plannerEntries.push(plannerEntry);
+
+    localStorage.setItem("entries", JSON.stringify(plannerEntries));
+  }
+
+  // Load saved entries back into planner UI
+  function loadEntries() {
+    if (localStorage.getItem("entries") === null) {
+      plannerEntries = [];
+    } else {
+      plannerEntries = JSON.parse(localStorage.getItem("entries"));
     }
 
     // Loop through the planner's time blocks
-    timeBlocks.forEach(function(block, index) {
-
-      // Capture block's corresponding id attribute and textarea element
+    timeBlocks.forEach(function (block) {
       var currentId = block.attr("id");
       var inputField = block.find(".user-input");
 
-      // Loop through stored events
-      for (var i = 0; i < storedEvents.length; i++) {
-
-        // Load the event if the id of the current block and the stored event match
-        if (storedEvents[i].id === currentId) {
-          inputField.val(storedEvents[i].description);
+      for (var i = 0; i < plannerEntries.length; i++) {
+        if (plannerEntries[i].id === currentId) {
+          inputField.val(plannerEntries[i].description);
         }
       }
     });
   }
 
-  loadEvents();
+  // Event Listener: Save Buttons
+  $(".saveBtn").on("click", function (event) {
+    var target = $(event.target);
+    var targetBlock;
+    var userInput;
+    var plannerEntry;
 
+    // Access the button's parent time block
+    if (target.hasClass("icon")) {
+      targetBlock = target.parent().parent();
+    } else if (target.hasClass("saveBtn")) {
+      targetBlock = target.parent();
+    }
+
+    userInput = targetBlock.find(".user-input").val();
+
+    plannerEntry = {
+      id: targetBlock.attr("id"),
+      description: userInput,
+    };
+
+    saveEntry(plannerEntry);
+  });
 });
