@@ -66,23 +66,47 @@ $(document).ready(function() {
   $(".saveBtn").on("click", function(event) {
 
     // Init local vars
-    var targetBlock;
-    var userInput;
+    var targetBlock, userInput, plannerEntry;
 
     // Capture which time block's button was clicked
     var target = $(event.target);
 
-    // Capture the parent element if icon was clicked
+    // Access the parent row time block
     if (target.hasClass("icon")) {
       targetBlock = target.parent().parent();
-    } 
-    // Capture the parent element if button was clicked
-    else if (target.hasClass("saveBtn")) {
+      
+    } else if (target.hasClass("saveBtn")) {
       targetBlock = target.parent();
     }
 
     // Capture user's input
     userInput = targetBlock.find(".user-input").val();
+
+    // Format storage object
+    plannerEntry = {
+      id: targetBlock.attr("id"),
+      description: userInput
+    }
+
+    // Save the event
+    saveEvent(plannerEntry);
   });
 
+
+  // Save event
+  function saveEvent(plannerEntry) {
+
+    // Check if user has already saved events in the planner
+    if (localStorage.getItem("events") === null) {
+      storedEvents = [];
+    } else {
+      storedEvents = JSON.parse(localStorage.getItem("events"));
+    }
+
+    // Push this event into the saved events array
+    storedEvents.push(plannerEntry);
+
+    // Set local storage
+    localStorage.setItem("events", JSON.stringify(storedEvents));
+  }
 });
