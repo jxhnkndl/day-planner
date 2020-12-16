@@ -74,7 +74,7 @@ $(document).ready(function() {
     // Access the parent row time block
     if (target.hasClass("icon")) {
       targetBlock = target.parent().parent();
-      
+
     } else if (target.hasClass("saveBtn")) {
       targetBlock = target.parent();
     }
@@ -109,4 +109,36 @@ $(document).ready(function() {
     // Set local storage
     localStorage.setItem("events", JSON.stringify(storedEvents));
   }
+
+
+  // Load saved events
+  function loadEvents() {
+
+    // Check if user has already saved events in the planner
+    if (localStorage.getItem("events") === null) {
+      storedEvents = [];
+    } else {
+      storedEvents = JSON.parse(localStorage.getItem("events"));
+    }
+
+    // Loop through the planner's time blocks
+    timeBlocks.forEach(function(block, index) {
+
+      // Capture block's corresponding id attribute and textarea element
+      var currentId = block.attr("id");
+      var inputField = block.find(".user-input");
+
+      // Loop through stored events
+      for (var i = 0; i < storedEvents.length; i++) {
+
+        // Load the event if the id of the current block and the stored event match
+        if (storedEvents[i].id === currentId) {
+          inputField.val(storedEvents[i].description);
+        }
+      }
+    });
+  }
+
+  loadEvents();
+
 });
