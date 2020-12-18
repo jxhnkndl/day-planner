@@ -31,7 +31,7 @@ $(document).ready(function() {
   var currentHour = now.format("HH");
 
   // Init local storage array
-  var plannerEntries = [];
+  var entries = [];
 
   // Run application
   init();
@@ -61,24 +61,41 @@ $(document).ready(function() {
   }
 
   // Save entry to local storage
-  function saveEntry(plannerEntry) {
+  function saveEntry(entry) {
+    var isDuplicate;
+    
     if (localStorage.getItem("entries") === null) {
-      plannerEntries = [];
+      entries = [];
     } else {
-      plannerEntries = JSON.parse(localStorage.getItem("entries"));
+      entries = JSON.parse(localStorage.getItem("entries"));
+    }
+    
+    entries.forEach(function (item) {
+      if (item.id === entry.id) {
+        isDuplicate = true;
+      } else {
+        isDuplicate = false;
+      }
+    });
+
+    console.log(isDuplicate);
+
+    if (entry.description !== "" && !isDuplicate) {
+      console.log("This is a new and valid entry. It has been saved.")
+      entries.push(entry);
+    } else {
+      console.log("This entry is a duplicate or has an invalid description. It has not been saved.")
     }
 
-    plannerEntries.push(plannerEntry);
-
-    localStorage.setItem("entries", JSON.stringify(plannerEntries));
+    localStorage.setItem("entries", JSON.stringify(entries));
   }
 
   // Load saved entries back into planner UI
   function loadEntries() {
     if (localStorage.getItem("entries") === null) {
-      plannerEntries = [];
+      entries = [];
     } else {
-      plannerEntries = JSON.parse(localStorage.getItem("entries"));
+      entries = JSON.parse(localStorage.getItem("entries"));
     }
 
     // Loop through the planner's time blocks
@@ -86,9 +103,9 @@ $(document).ready(function() {
       var currentId = block.attr("id");
       var inputField = block.find(".user-input");
 
-      for (var i = 0; i < plannerEntries.length; i++) {
-        if (plannerEntries[i].id === currentId) {
-          inputField.val(plannerEntries[i].description);
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].id === currentId) {
+          inputField.val(entries[i].description);
         }
       }
     });
@@ -99,7 +116,7 @@ $(document).ready(function() {
     var target = $(event.target);
     var targetBlock;
     var userInput;
-    var plannerEntry;
+    var entry;
 
     // Access the button's parent time block
     if (target.hasClass("icon")) {
@@ -110,11 +127,11 @@ $(document).ready(function() {
 
     userInput = targetBlock.find(".user-input").val();
 
-    plannerEntry = {
+    entry = {
       id: targetBlock.attr("id"),
       description: userInput,
     };
 
-    saveEntry(plannerEntry);
+    saveEntry(entry);
   });
 });
