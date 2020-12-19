@@ -60,34 +60,49 @@ $(document).ready(function() {
     });
   }
 
-  // Save entry to local storage
+  // Validate and save entry to local storage
   function saveEntry(entry) {
-    var isDuplicate;
-    
+
     if (localStorage.getItem("entries") === null) {
       entries = [];
     } else {
       entries = JSON.parse(localStorage.getItem("entries"));
     }
-    
-    entries.forEach(function (item) {
-      if (item.id === entry.id) {
-        isDuplicate = true;
-      } else {
-        isDuplicate = false;
+
+    for (var i = 0; i < entries.length; i++) {
+
+      // Duplicate entry
+      if (entries[i].id === entry.id && entries[i].input === entry.input) {
+        console.log("Duplicate entry. Not saved.");
+        return;
       }
-    });
-
-    console.log(isDuplicate);
-
-    if (entry.description !== "" && !isDuplicate) {
-      console.log("This is a new and valid entry. It has been saved.")
-      entries.push(entry);
-    } else {
-      console.log("This entry is a duplicate or has an invalid description. It has not been saved.")
+      // Deleted entry
+      else if (entries[i].id === entry.id && entry.input === "") {
+        entries.splice(i, 1);
+        console.log("Entry removed.");
+        setLocalStorage();
+        return;
+      }
+      // Edited entry
+      else if (entries[i].id === entry.id && entries[i].input !== entry.input) {
+        entries[i] = entry;
+        console.log("Edited entry. Saved.");
+        setLocalStorage();
+        return;
+      }
     }
 
-    localStorage.setItem("entries", JSON.stringify(entries));
+    // Empty entry
+    if (entry.input === "") {
+      console.log("Empty entry. Not saved.");
+      return;
+    } 
+    // New, valid entry
+    else {
+      entries.push(entry);
+    }
+
+    setLocalStorage();
   }
 
   // Load saved entries back into planner UI
@@ -105,10 +120,15 @@ $(document).ready(function() {
 
       for (var i = 0; i < entries.length; i++) {
         if (entries[i].id === currentId) {
-          inputField.val(entries[i].description);
+          inputField.val(entries[i].input);
         }
       }
     });
+  }
+
+  // Set local storage
+  function setLocalStorage() {
+    localStorage.setItem("entries", JSON.stringify(entries));
   }
 
   // Event Listener: Save Buttons
@@ -129,7 +149,7 @@ $(document).ready(function() {
 
     entry = {
       id: targetBlock.attr("id"),
-      description: userInput,
+      input: userInput,
     };
 
     saveEntry(entry);
