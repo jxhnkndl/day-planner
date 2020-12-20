@@ -16,7 +16,7 @@
 ## Deployed Application
 The deployed application can be viewed at the link below.
 
-[Code Quiz - Live Demo](https://jxhnkndl.github.io/day-planner)
+[Day Planner - Live Demo](https://jxhnkndl.github.io/day-planner)
 
 ## Project Goals
 
